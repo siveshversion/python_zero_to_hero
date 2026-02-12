@@ -90,7 +90,6 @@ def main():
 
     # Footer
     st.sidebar.markdown("---")
-    st.sidebar.info("Built with Streamlit")
 
 if __name__ == "__main__":
     main()
