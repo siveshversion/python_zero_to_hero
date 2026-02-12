@@ -11,6 +11,16 @@ def main():
         initial_sidebar_state="expanded"
     )
 
+    # Hide Streamlit Style
+    hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+    st.markdown(hide_st_style, unsafe_allow_html=True)
+
     st.title("🐍 Python Zero to Hero")
 
     # Sidebar Navigation - Mode Selection
