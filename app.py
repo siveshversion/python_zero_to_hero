@@ -3,6 +3,11 @@ from content import TOPICS
 from utils import execute_code
 from interview_questions import QUESTIONS
 
+from code_editor import code_editor
+
+def update_selection(new_topic):
+    st.session_state.topic_selection = new_topic
+
 def main():
     st.set_page_config(
         page_title="Python Zero to Hero",
@@ -47,7 +52,16 @@ def main():
             topic_content = {"title": "Not Found", "theory": "### No matching topic found.", "example_code": "# Try searching for something else"}
             selection = None
         else:
-            selection = st.sidebar.radio("Go to", filtered_topics)
+            # Determine index for navigation
+            # Use session state to handle programmatically setting the selection via buttons
+            if "topic_selection" not in st.session_state:
+                st.session_state.topic_selection = filtered_topics[0]
+
+            # Ensure the current selection is valid for the current filtered list
+            if st.session_state.topic_selection not in filtered_topics:
+                 st.session_state.topic_selection = filtered_topics[0]
+
+            selection = st.sidebar.radio("Go to", filtered_topics, key="topic_selection")
             topic_content = TOPICS[selection]
 
         if selection:
@@ -62,13 +76,43 @@ def main():
                 st.header("Interactive Code Editor")
                 st.markdown("Edit the code below and click **Run** to see the output.")
                 
-                # Code Editor
-                code_input = st.text_area("Code", value=topic_content["example_code"], height=300)
+                # Code Editor with Line Numbers
+                response_dict = code_editor(
+                    topic_content["example_code"],
+                    lang="python",
+                    height=[15, 30],
+                    theme="default",
+                    buttons=[],
+                    options={"showLineNumbers": True, "wrap": True}
+                )
+                
+                if response_dict['type'] == "submit" and len(response_dict['text']) != 0:
+                     code_input = response_dict['text']
+                else:
+                     code_input = response_dict['text']
+
+                # We keep the external run button for now as per plan, but code_editor can also have buttons.
+                # However, code_editor returns the current state of code in 'text'.
                 
                 if st.button("Run Code"):
                     st.markdown("### Output")
-                    output = execute_code(code_input)
+                    # Use the code from the editor. If modified, response_dict['text'] holds the new code.
+                    output = execute_code(code_input if code_input else topic_content["example_code"])
                     st.code(output)
+
+            # --- Navigation Buttons ---
+            st.markdown("---")
+            nav_col1, nav_col2, nav_col3 = st.columns([1, 8, 1])
+            
+            current_index = filtered_topics.index(selection)
+            
+            with nav_col1:
+                if current_index > 0:
+                    st.button("← Previous", on_click=update_selection, args=(filtered_topics[current_index - 1],))
+            
+            with nav_col3:
+                if current_index < len(filtered_topics) - 1:
+                    st.button("Next →", on_click=update_selection, args=(filtered_topics[current_index + 1],))
     
     elif app_mode == "Interview Questions":
         st.markdown("### 🎓 Python Interview Questions")
