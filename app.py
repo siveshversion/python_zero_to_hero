@@ -131,6 +131,9 @@ def main():
         for i, q in enumerate(filtered_questions):
             with st.expander(f"Q{i+1}: {q['question']} ({q['category']})"):
                 st.markdown(f"**Answer:** {q['answer']}")
+                if "code" in q:
+                    st.markdown("**Example:**")
+                    st.code(q["code"])
 
     # Footer
     st.sidebar.markdown("---")
